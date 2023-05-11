@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -24,15 +25,48 @@ namespace ApiClient
         }
         static async Task Main(string[] args)
         {
-            var client = new HttpClient();
+            var keepGoing = true;
 
-            var responseAsStream = await client.GetStreamAsync("https://official-joke-api.appspot.com/random_joke");
+            while (keepGoing)
+            {
+                Console.Clear();
+                Console.Write("(R)andom joke, (T)en random jokes, or (Q)uit:");
+                var choice = Console.ReadLine().ToUpper();
 
-            var randomJoke = await JsonSerializer.DeserializeAsync<Joke>(responseAsStream);
+                switch (choice)
+                {
+                    case "Q":
+                        keepGoing = false;
+                        break;
+                    case "R":
+                        var client = new HttpClient();
 
-            Console.WriteLine(randomJoke.Setup);
-            Console.Read();
-            Console.WriteLine(randomJoke.PunchLine);
+                        var responseAsStream = await client.GetStreamAsync("https://official-joke-api.appspot.com/random_joke");
+
+                        var randomJoke = await JsonSerializer.DeserializeAsync<Joke>(responseAsStream);
+
+                        Console.WriteLine(randomJoke.Setup);
+                        Console.Read();
+                        Console.WriteLine(randomJoke.PunchLine);
+                        Console.Read();
+                        break;
+                    case "T":
+                        var client2 = new HttpClient();
+
+                        var responseAsStream2 = await client2.GetStreamAsync("https://official-joke-api.appspot.com/random_ten");
+
+                        var tenRandomJokes = await JsonSerializer.DeserializeAsync<List<Joke>>(responseAsStream2);
+
+                        foreach (var joke in tenRandomJokes)
+                        {
+                            Console.WriteLine(joke.Setup);
+                            Console.WriteLine(joke.PunchLine);
+                            Console.WriteLine();
+                        }
+                        Console.Read();
+                        break;
+                }
+            }
         }
     }
 }
