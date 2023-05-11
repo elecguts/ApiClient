@@ -30,7 +30,7 @@ namespace ApiClient
             while (keepGoing)
             {
                 Console.Clear();
-                Console.Write("(R)andom joke, (T)en random jokes, or (Q)uit:");
+                Console.Write("(R)andom joke, (T)en random jokes, (S)earch joke library, (F)ind joke by ID or (Q)uit:");
                 var choice = Console.ReadLine().ToUpper();
 
                 switch (choice)
@@ -64,6 +64,55 @@ namespace ApiClient
                             Console.WriteLine();
                         }
                         Console.Read();
+                        break;
+                    case "S":
+                        Console.WriteLine("What joke topic would you like to search for?");
+                        var jokeSearch = Console.ReadLine().ToLower();
+
+                        var client3 = new HttpClient();
+
+                        var responseAsStream3 = await client3.GetStreamAsync($"https://official-joke-api.appspot.com/jokes/{jokeSearch}/random");
+
+                        var topicalJoke = await JsonSerializer.DeserializeAsync<List<Joke>>(responseAsStream3);
+
+                        if (topicalJoke.Count == 1)
+                        {
+                            foreach (var joke in topicalJoke)
+                            {
+                                Console.WriteLine(joke.Setup);
+                                Console.Read();
+                                Console.WriteLine(joke.PunchLine);
+                                Console.Read();
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("I didn't find any jokes on that topic");
+                            Console.Read();
+                        }
+                        break;
+                    case "F":
+                        Console.WriteLine("What joke number Id would you like to search for?");
+                        var searchJokeById = int.Parse(Console.ReadLine());
+
+                        try
+                        {
+                            var client4 = new HttpClient();
+
+                            var responseAsStream4 = await client4.GetStreamAsync($"https://official-joke-api.appspot.com/jokes/{searchJokeById}");
+
+                            var jokeById = await JsonSerializer.DeserializeAsync<Joke>(responseAsStream4);
+
+                            Console.WriteLine(jokeById.Setup);
+                            Console.Read();
+                            Console.WriteLine(jokeById.PunchLine);
+                            Console.Read();
+                        }
+                        catch (HttpRequestException)
+                        {
+                            Console.WriteLine("I didn't find a joke with that Id");
+                            Console.Read();
+                        }
                         break;
                 }
             }
